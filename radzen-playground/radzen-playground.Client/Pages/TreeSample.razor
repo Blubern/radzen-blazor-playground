@@ -1,0 +1,72 @@
+﻿@page "/treeSample"
+@using radzenplayground.Client
+<h3>TreeSample</h3>
+
+@if (Categories == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <RadzenCard Style="max-width: 15%; overflow-x:auto">
+        <RadzenTree Data=@Categories>
+            <RadzenTreeLevel
+            TextProperty="@nameof(MyTreeItem.Text)" 
+            ChildrenProperty="@nameof(MyTreeItem.Items)"
+            HasChildren="@(a => (a as MyTreeItem).HasChildren )"
+            />
+        </RadzenTree>
+    </RadzenCard>
+}
+
+@code {
+    public IEnumerable<MyTreeItem> Categories { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Categories = GenerateTree(4, 200);
+        StateHasChanged();
+    }
+
+    private IEnumerable<MyTreeItem> GenerateTree(int depth, int totalElements)
+    {
+        var rootItems = new List<MyTreeItem>();
+        var random = new Random();
+        int elementsPerLevel = totalElements / (int)Math.Pow(2, depth - 1);
+
+        for (int i = 0; i < elementsPerLevel; i++)
+        {
+            var nodeName = "Root-" + i + "_Car_Auto_Bremse_we_want";
+            if (i % 2 == 0)
+            {
+                nodeName = "Root-" + i;
+            }
+            rootItems.Add(CreateTreeItem(nodeName, depth - 1, random));
+        }
+
+        return rootItems;
+    }
+
+    private MyTreeItem CreateTreeItem(string text, int depth, Random random)
+    {
+        var item = new MyTreeItem
+            {
+                Text = text,
+                Expanded = true,
+                Items = new List<MyTreeItem>()
+            };
+
+        if (depth > 0)
+        {
+            int childCount = random.Next(1, 4); // Random number of children between 1 and 3
+            for (int i = 0; i < childCount; i++)
+            {
+                item.Items.Add(CreateTreeItem(text + " - Child " + i, depth - 1, random));
+            }
+        }
+
+        return item;
+    }
+}
